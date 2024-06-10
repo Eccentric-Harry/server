@@ -2,8 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev" : "nodemon src/index.js"
+
   },
   "keywords": [
     "javascript",
@@ -12,5 +14,8 @@
   ],
   "author": "Harinadh",
   "license": "ISC",
-  "description": "Learning Backend using Complex Project"
+  "description": "Learning Backend using Complex Project",
+  "devDependencies": {
+        "nodemon": "^3.1.3"
+      }
 }

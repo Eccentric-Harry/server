@@ -29,3 +29,5 @@ const uploadOnCloudinary = async (localFilePath) => {
 
 
 export {uploadOnCloudinary}
+
+// mutler ko use karke -> local storage -> cloudinary -> cloud storage

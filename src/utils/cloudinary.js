@@ -1,29 +1,31 @@
 import {v2 as cloudinary} from "cloudinary"
 import fs from "fs"
 
+
 cloudinary.config({ 
-    cloud_name: 'process.env.CLOUDINARY_CLOUD_NAME', 
-    api_key: 'process.env.CLOUDINARY_API_KEY', 
-    api_secret: 'provess.env.CLOUDINARY_API_SECRET'
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+  api_key: process.env.CLOUDINARY_API_KEY, 
+  api_secret: process.env.CLOUDINARY_API_SECRET 
 });
 
-const uploadOnCloudinary = async (localFIlePath) =>{
+const uploadOnCloudinary = async (localFilePath) => {
     try {
-        if (!localFIlePath) return null;
-        // upload the file on cloudinary
-        const response = await cloudinary.uploader.upload(localFIlePath, {resource_type : "auto"})
-        // flie has been uploaded on cloudinary Successfully!
-        console.log("flie has been uploaded on cloudinary Successfully!", response.url);
-        console.log(response);
+        if (!localFilePath) return null
+        //upload the file on cloudinary
+        const response = await cloudinary.uploader.upload(localFilePath, {
+            resource_type: "auto"
+        })
+        // file has been uploaded successfull
+        //console.log("file is uploaded on cloudinary ", response.url);
+        fs.unlinkSync(localFilePath)
         return response;
-        
+
     } catch (error) {
-        fs.unlinkSync(localFIlePath); // removes the locally uploaded file that is temporarily stored on the server
+        fs.unlinkSync(localFilePath) // remove the locally saved temporary file as the upload operation got failed
+        return null;
     }
 }
 
 
+
 export {uploadOnCloudinary}
-
-
-// multer ko use karke user -> local Storage -> cloudinary

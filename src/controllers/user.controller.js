@@ -199,7 +199,7 @@ const refreshAccessToken = asyncHandler (async(req, res)=> {
         const decodedToken =  jwt.verify(
             incomingRefreshToken,
             process.env.REFRESH_TOKEN_SECRET,
-        )
+        ) // this returns the decoded refresh token that is sotred in the database.
         console.log(decodedToken);
     
         const user = await User.findById(decodedToken?._id);

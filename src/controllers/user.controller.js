@@ -4,6 +4,7 @@ import { User} from '../models/user.model.js'
 import { uploadOnCloudinary} from '../utils/cloudinary.js'
 import { ApiResponse } from "../utils/ApiResponse.js";
 import  jwt  from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshTokens = async (userId) =>{
     try {
@@ -437,27 +438,27 @@ const getUserChannelProfile = asyncHandler(async(req, res) => {
     )
 })
 
-const getWatchHistory = asyncHandler(async(req, res) => {
+const getWatchHistory = asyncHandler(async(req, res)=> {
     const user = await User.aggregate([
         {
             $match: {
-                _id: new mongoose.Types.ObjectId(req.user._id)
+                _id: new mongoose.Types.ObjectId(req.user?._id)
             }
         },
         {
-            $lookup: {
-                from: "videos",
+            $lookup : {
+                from : "videos",
                 localField: "watchHistory",
                 foreignField: "_id",
                 as: "watchHistory",
-                pipeline: [
+                pipeline : [
                     {
-                        $lookup: {
-                            from: "users",
-                            localField: "owner",
-                            foreignField: "_id",
+                        $lookup : {
+                            from : "users",
+                            localField : "owner",
+                            foreignField : "_id",
                             as: "owner",
-                            pipeline: [
+                            pipeline : [
                                 {
                                     $project: {
                                         fullName: 1,
@@ -469,9 +470,9 @@ const getWatchHistory = asyncHandler(async(req, res) => {
                         }
                     },
                     {
-                        $addFields:{
-                            owner:{
-                                $first: "$owner"
+                        $addFields : {
+                            owner : {
+                                $first  : "$owner"
                             }
                         }
                     }
@@ -486,11 +487,10 @@ const getWatchHistory = asyncHandler(async(req, res) => {
         new ApiResponse(
             200,
             user[0].watchHistory,
-            "Watch history fetched successfully"
+            "Watch History Fetched Successfully!"
         )
     )
 })
-
 
 export { 
             registerUser,

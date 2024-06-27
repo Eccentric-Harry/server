@@ -6,54 +6,93 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
-// Function to fetch all videos with pagination, filtering, and sorting
+
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy = 'createdAt', sortType = 'asc', userId } = req.query;
-
-    // Parse pagination parameters
-    const pageNumber = parseInt(page, 10);
-    const limitNumber = parseInt(limit, 10);
-    const skip = (pageNumber - 1) * limitNumber;
-
-    // Build MongoDB query
-    const mongoQuery = {};
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+  
+    const pipeline = [];
+    //first create a search index using atlas
+    //then use $search to search the videos
+    //search index is created on title and description fields
+    //here i have created "search-videos" index on "videos" collection
     if (query) {
-        mongoQuery.$or = [
-            { title: { $regex: query, $options: 'i' } },
-            { description: { $regex: query, $options: 'i' } }
-        ];
+      pipeline.push({
+        $search: {
+          index: "search-videos",
+          text: {
+            query: query,
+            path: ["title", "description"],
+          },
+        },
+      });
     }
     if (userId) {
-        mongoQuery.owner = userId;
+      if (!isValidObjectId(userId)) {
+        throw new ApiError(400, "Invalid userId");
+      }
+  
+      pipeline.push({
+        $match: {
+          owner: new mongoose.Types.ObjectId(userId),
+        },
+      });
     }
+    // fetch videos only that are set isPublished as true
+    pipeline.push({ $match: { isPublished: true } });
+  
+    //sortBy can be views, createdAt, duration
+    //sortType can be ascending(-1) or descending(1)
+    if (sortBy && sortType) {
+      pipeline.push({
+        $sort: {
+          [sortBy]: sortType === "asc" ? 1 : -1,
+        },
+      });
+    } else {
+      pipeline.push({ $sort: { createdAt: -1 } });
+    }
+  
+    pipeline.push(
+      {
+        $lookup: {
+          from: "users",
+          localField: "owner",
+          foreignField: "_id",
+          as: "ownerDetails",
+          pipeline: [
+            {
+              $project: {
+                username: 1,
+                "avatar.url": 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: "$ownerDetails",
+      }
+    );
+  
+    const videoAggregate = Video.aggregate(pipeline);
+  
+    const options = {
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+    };
+  
+    const videos = await Video.aggregatePaginate(videoAggregate, options);
+  
+    return res
+      .status(200)
+      .json(new ApiResponse(200, videos, "Videos fetched successfully"));
+  });
+  
 
-    // Build sorting options
-    const sortOptions = {};
-    sortOptions[sortBy] = sortType === 'desc' ? -1 : 1;
-
-    // Fetch videos from the database
-    const videos = await Video.find(mongoQuery)
-        .sort(sortOptions)
-        .skip(skip)
-        .limit(limitNumber);
-
-    // Get total count for pagination
-    const totalVideos = await Video.countDocuments(mongoQuery);
-
-    // Send the response
-    res.status(200).json(new ApiResponse(200, {
-        total: totalVideos,
-        page: pageNumber,
-        limit: limitNumber,
-        videos
-    }, "Videos fetched successfully"));
-});
-
-// Function to publish a new video
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description, isPublished } = req.body;
 
-    // Check if required fields are provided
+ 
     if (
         [title, description, isPublished].some(
             (field) => field === undefined || field?.trim() === ""
@@ -62,23 +101,22 @@ const publishAVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All fields are required");
     }
 
-    // Log the received files
+   
     console.log("Received files:", req.files);
 
-    // Retrieve video file path
+
     const videoLocalPath = req.files?.videoFile?.[0]?.path;
     console.log("Video local path:", videoLocalPath);
 
     if (!videoLocalPath) throw new ApiError(401, "Video is required to publish");
 
-    // Retrieve thumbnail file path
     const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
     console.log("Thumbnail local path:", thumbnailLocalPath);
 
     if (!thumbnailLocalPath) throw new ApiError(401, "Thumbnail is required to publish");
 
     try {
-        // Upload video and thumbnail to Cloudinary
+      
         const videoFile = await uploadOnCloudinary(videoLocalPath);
         const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
 
@@ -86,7 +124,6 @@ const publishAVideo = asyncHandler(async (req, res) => {
             console.log("Uploaded video URL:", videoFile.url);
         }
 
-        // Create new video document in the database
         const video = await Video.create({
             videoFile: videoFile.url,
             thumbnail: thumbnail.url,
@@ -97,7 +134,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
             owner: req.user._id,
           });
 
-        // Send response
+   
         res.status(201).json(new ApiResponse(201, video, "Video uploaded successfully"));
     } catch (error) {
         console.error("Error uploading video or creating video document:", error);
@@ -108,7 +145,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 
 
-// Function to fetch a video by its ID and increment views count
+
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
 

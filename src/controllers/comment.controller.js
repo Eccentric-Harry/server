@@ -14,11 +14,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
     }
 
     const comments = await Comment.aggregate([
-        {
-            $match: {
-                video: mongoose.Types.ObjectId(videoId)
-            }
-        },
+        { $match: { video: mongoose.Types.ObjectId(videoId) } },
         {
             $lookup: {
                 from: "users",
@@ -27,28 +23,19 @@ const getVideoComments = asyncHandler(async (req, res) => {
                 as: "owner"
             }
         },
-        {
-            $unwind: "$owner"
-        },
+        { $unwind: "$owner" },
         {
             $project: {
                 _id: 1,
                 content: 1,
-                owner: {
-                    _id: 1,
-                    username: 1
-                }
+                owner: { _id: 1, username: 1 }
             }
         },
-        {
-            $skip: skip
-        },
-        {
-            $limit: limit
-        }
+        { $skip: skip },
+        { $limit: limit }
     ]);
 
-    if (!comments || comments.length === 0) {
+    if (!comments.length) {
         throw new ApiError(404, "No comments found");
     }
 
@@ -74,10 +61,6 @@ const addComment = asyncHandler(async (req, res) => {
         video: videoId
     });
 
-    if (!comment) {
-        throw new ApiError(500, "Failed to add comment");
-    }
-
     return res.status(201).json(new ApiResponse(201, comment, "Comment added successfully"));
 });
 
@@ -92,7 +75,7 @@ const updateComment = asyncHandler(async (req, res) => {
     const comment = await Comment.findByIdAndUpdate(
         commentId,
         { $set: { content } },
-        { new: true }
+        { new: true, runValidators: true }
     );
 
     if (!comment) {

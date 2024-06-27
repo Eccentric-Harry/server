@@ -14,6 +14,17 @@ const toggleSubscription = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid channel ID");
     }
 
+    // Check if the channel exists
+    const channelExists = await User.findById(channelId);
+    if (!channelExists) {
+        throw new ApiError(404, "Channel not found");
+    }
+
+    // Check if the user is trying to subscribe to their own channel
+    if (channelId === userId.toString()) {
+        throw new ApiError(400, "You cannot subscribe to your own channel");
+    }
+
     const existingSubscription = await Subscription.findOne({
         channel: channelId,
         subscriber: userId
@@ -39,11 +50,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid channel ID");
     }
 
-    const subscribers = await Subscription.find({ channel: channelId }).populate("subscriber");
-
-    if (!subscribers || subscribers.length === 0) {
-        throw new ApiError(404, "No subscribers found");
-    }
+    const subscribers = await Subscription.find({ channel: channelId }).populate("subscriber", "username email");
 
     return res.status(200).json(new ApiResponse(200, subscribers, "Subscribers fetched successfully"));
 });
@@ -56,11 +63,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid subscriber ID");
     }
 
-    const channelsSubscribed = await Subscription.find({ subscriber: subscriberId }).populate("channel");
-
-    if (!channelsSubscribed || channelsSubscribed.length === 0) {
-        throw new ApiError(404, "No channels subscribed");
-    }
+    const channelsSubscribed = await Subscription.find({ subscriber: subscriberId }).populate("channel", "username email");
 
     return res.status(200).json(new ApiResponse(200, channelsSubscribed, "Subscribed channels fetched successfully"));
 });

@@ -51,52 +51,62 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
 // Function to publish a new video
 const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description } = req.body;
+    const { title, description, isPublished } = req.body;
 
-    // Check if video file and thumbnail are uploaded
-    let videoPath;
-    if (req.file && req.file.path) {
-        videoPath = req.file.path;
-    }
-    if (!videoPath) {
-        throw new ApiError(400, "Video file is required! Please upload.");
-    }
-
-    // Upload video to Cloudinary and retrieve URL and duration
-    const videoUploadResult = await uploadOnCloudinary(videoPath);
-    if (!videoUploadResult) {
-        throw new ApiError(500, "Failed to upload video on Cloudinary");
-    }
-    const videoUrl = videoUploadResult.secure_url;
-    const videoDuration = videoUploadResult.duration;
-
-    // Check if thumbnail is uploaded
-    let thumbnailPath;
-    if (req.files && Array.isArray(req.files.thumbnail) && req.files.thumbnail.length > 0) {
-        thumbnailPath = req.files.thumbnail[0].path;
-    }
-    if (!thumbnailPath) {
-        throw new ApiError(400, "Thumbnail is required! Please upload.");
+    // Check if required fields are provided
+    if (
+        [title, description, isPublished].some(
+            (field) => field === undefined || field?.trim() === ""
+        )
+    ) {
+        throw new ApiError(400, "All fields are required");
     }
 
-    // Upload thumbnail to Cloudinary and retrieve URL
-    const thumbnailUploadResult = await uploadOnCloudinary(thumbnailPath);
-    if (!thumbnailUploadResult) {
-        throw new ApiError(500, "Failed to upload thumbnail on Cloudinary");
+    // Log the received files
+    console.log("Received files:", req.files);
+
+    // Retrieve video file path
+    const videoLocalPath = req.files?.videoFile?.[0]?.path;
+    console.log("Video local path:", videoLocalPath);
+
+    if (!videoLocalPath) throw new ApiError(401, "Video is required to publish");
+
+    // Retrieve thumbnail file path
+    const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
+    console.log("Thumbnail local path:", thumbnailLocalPath);
+
+    if (!thumbnailLocalPath) throw new ApiError(401, "Thumbnail is required to publish");
+
+    try {
+        // Upload video and thumbnail to Cloudinary
+        const videoFile = await uploadOnCloudinary(videoLocalPath);
+        const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
+
+        if (videoFile) {
+            console.log("Uploaded video URL:", videoFile.url);
+        }
+
+        // Create new video document in the database
+        const video = await Video.create({
+            videoFile: videoFile.url,
+            thumbnail: thumbnail.url,
+            duration: videoFile.duration,
+            title,
+            description,
+            isPublished,
+            owner: req.user._id,
+          });
+
+        // Send response
+        res.status(201).json(new ApiResponse(201, video, "Video uploaded successfully"));
+    } catch (error) {
+        console.error("Error uploading video or creating video document:", error);
+        throw new ApiError(500, "An error occurred while uploading the video");
     }
-    const thumbnailUrl = thumbnailUploadResult.secure_url;
-
-    // Create video in database with required fields
-    const video = await Video.create({
-        videoFile: videoUrl,
-        thumbnail: thumbnailUrl,
-        title,
-        description,
-        duration: videoDuration // Save the video duration
-    });
-
-    res.status(201).json({ message: 'Video uploaded successfully', video });
 });
+
+
+
 
 // Function to fetch a video by its ID and increment views count
 const getVideoById = asyncHandler(async (req, res) => {

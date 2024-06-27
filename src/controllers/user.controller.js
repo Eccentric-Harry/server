@@ -36,7 +36,7 @@ const registerUser = asyncHandler( async(req, res) => {
     // check for user creation
     // return response to frontend
 
-    //  console.log("req: ",req);
+
 
     // get user details from frontend 
     const {username, fullName, email, password} = req.body
@@ -66,26 +66,11 @@ const registerUser = asyncHandler( async(req, res) => {
     // const avatarLocalPath = req.files?.avatar[0]?.path;
     let avatarLocalPath;
     if(req.files && Array.isArray(req.files.avatar) && req.files.avatar.length > 0){
-        avatarLocalPath = req.files.avatar[0].path;
+        avatarLocalPath = req.files.avatar[0].path
     }
+    console.log(req.files);
+        console.log("avatarLocalPath :", avatarLocalPath);
     //const coverImageLocalPath = req.files?.coverImage[0]?.path;
-
-    // CONCEPT: 
-    // req.files = {
-    //     avatar: [
-    //         {
-    //             fieldname: 'avatar',
-    //             originalname: 'example.png',
-    //             encoding: '7bit',
-    //             mimetype: 'image/png',
-    //             destination: './public/temp',
-    //             filename: 'example.png',
-    //             path: './public/temp/example.png',
-    //             size: 12345
-    //         }
-    //     ]
-    // }
-    
 
     let coverImageLocalPath;
     if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
@@ -122,7 +107,7 @@ const registerUser = asyncHandler( async(req, res) => {
     }
 
     return res.status(200).json(
-        new ApiResponse(200, createdUser, refreshToken, "User created successfully")
+        new ApiResponse(200, createdUser, "User created successfully")
     )
 } )
 
@@ -187,12 +172,10 @@ const logoutUser = asyncHandler( async(req, res) => {
 
     await User.findByIdAndUpdate(req.user._id, 
         {
-            $unset:{
-                refreshToken: 1 // this removes the field from the document.
-            }
+            refreshToken: undefined
         },
         {
-            new: true // return the updated document.
+            new: true
         }
     )
 
@@ -225,7 +208,7 @@ const refreshAccessToken = asyncHandler (async(req, res)=> {
             incomingRefreshToken,
             process.env.REFRESH_TOKEN_SECRET,
         ) // this returns the decoded refresh token that is sotred in the database.
-        console.log(decodedToken); // { _id: '66753d050f3d477f07cf5973', iat: 1719295564, exp: 1720159564 }
+        console.log(decodedToken);
     
         const user = await User.findById(decodedToken?._id);
         if(!user){
@@ -303,7 +286,7 @@ const updateAccountDetails = asyncHandler( async(req, res)=> {
         req.user?._id,
         {
             $set: {
-                fullName : fullName,
+                fullName,
                 email : email
             }
         },
@@ -391,7 +374,7 @@ const updateCoverImage = asyncHandler (async(req, res)=>{
 
 const getUserChannelProfile = asyncHandler(async(req, res) => {
     const {username} = req.params
-    console.log(req.params);
+
     if (!username?.trim()) {
         throw new ApiError(400, "username is missing")
     }

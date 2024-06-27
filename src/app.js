@@ -22,11 +22,12 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 
-// import router 
-import userRouter from './routes/user.routes.js'
+// Import routers
+import userRouter from './routes/user.routes.js';
+import videoRouter from './routes/video.routes.js'; // Import video routes
 
-// routes declaration
-app.use("/api/v1/users", userRouter)
-
+// Routes declaration
+app.use('/api/v1/users', userRouter);
+app.use('/api/v1/videos', videoRouter); // Mount video routes under /api/v1/videos
 
 export { app }

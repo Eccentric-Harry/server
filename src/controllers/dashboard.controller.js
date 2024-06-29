@@ -25,7 +25,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
 
     // Total views (assuming Video schema has a 'views' field)
     const totalViewsResult = await Video.aggregate([
-        { $match: { owner: mongoose.Types.ObjectId(userId) } },
+        { $match: { owner: new mongoose.Types.ObjectId(userId) } },
         { $group: { _id: null, totalViews: { $sum: "$views" } } }
     ]);
     const totalViews = totalViewsResult[0]?.totalViews || 0;

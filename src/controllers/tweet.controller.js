@@ -5,7 +5,6 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-// Function to create a new tweet
 const createTweet = asyncHandler(async (req, res) => {
     const { content } = req.body;
     const userId = req.user?._id;
@@ -22,7 +21,6 @@ const createTweet = asyncHandler(async (req, res) => {
     return res.status(201).json(new ApiResponse(201, tweet, "Tweet created successfully"));
 });
 
-// Function to get tweets of a specific user
 const getUserTweets = asyncHandler(async (req, res) => {
     const { userId } = req.params;
 
@@ -40,7 +38,6 @@ const getUserTweets = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, tweets, "Tweets fetched successfully"));
 });
 
-// Function to update a tweet by its ID
 const updateTweet = asyncHandler(async (req, res) => {
     const { tweetId } = req.params;
     const { content } = req.body;
@@ -67,7 +64,6 @@ const updateTweet = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, updatedTweet, "Tweet updated successfully"));
 });
 
-// Function to delete a tweet by its ID
 const deleteTweet = asyncHandler(async (req, res) => {
     const { tweetId } = req.params;
 
@@ -85,9 +81,20 @@ const deleteTweet = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, null, "Tweet deleted successfully"));
 });
 
+const getAllTweets = asyncHandler(async (req, res) => {
+    const tweets = await Tweet.find().populate("owner", "username email");
+
+    if (!tweets || tweets.length === 0) {
+        throw new ApiError(404, "No tweets found");
+    }
+
+    return res.status(200).json(new ApiResponse(200, tweets, "Tweets fetched successfully"));
+});
+
 export {
     createTweet,
     getUserTweets,
     updateTweet,
-    deleteTweet
-};
+    deleteTweet,
+    getAllTweets,
+}

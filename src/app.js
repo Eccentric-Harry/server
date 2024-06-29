@@ -27,11 +27,13 @@ import userRouter from './routes/user.routes.js';
 import videoRouter from './routes/video.routes.js';
 import subscriptionRoutes from './routes/subscription.routes.js'
 import tweetRoutes from './routes/tweet.routes.js'
+import likeRoutes from './routes/like.routes.js'
 
 // Routes declaration
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/videos', videoRouter);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
 app.use('/api/v1/tweets', tweetRoutes);
+app.use('/api/v1/likes', likeRoutes);
 
 export { app }

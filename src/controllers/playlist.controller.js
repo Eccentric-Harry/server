@@ -36,7 +36,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     const playlists = await Playlist.aggregate([
         {
             $match: {
-                owner: mongoose.Types.ObjectId(userId),
+                owner: new mongoose.Types.ObjectId(userId),
             },
         },
         {
@@ -78,7 +78,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     const playlist = await Playlist.aggregate([
         {
             $match: {
-                _id: mongoose.Types.ObjectId(playlistId),
+                _id: new mongoose.Types.ObjectId(playlistId),
             },
         },
         {

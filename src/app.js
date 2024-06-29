@@ -24,10 +24,12 @@ app.use(cookieParser())
 
 // Import routers
 import userRouter from './routes/user.routes.js';
-import videoRouter from './routes/video.routes.js'; // Import video routes
+import videoRouter from './routes/video.routes.js';
+import subscriptionRoutes from './routes/subscription.routes.js'
 
 // Routes declaration
 app.use('/api/v1/users', userRouter);
-app.use('/api/v1/videos', videoRouter); // Mount video routes under /api/v1/videos
+app.use('/api/v1/videos', videoRouter);
+app.use('/api/v1/subscriptions', subscriptionRoutes);
 
 export { app }

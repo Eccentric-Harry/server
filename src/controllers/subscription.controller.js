@@ -9,18 +9,20 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     const { channelId } = req.params;
     const userId = req.user?._id;
 
-    // Validate channelId
+ 
     if (!isValidObjectId(channelId)) {
         throw new ApiError(400, "Invalid channel ID");
     }
 
-    // Check if the channel exists
+    if (userId.toHexString() === channelId) {
+        throw new ApiError(401, "Self-Subscription is prohibited");
+    }
+
     const channelExists = await User.findById(channelId);
     if (!channelExists) {
         throw new ApiError(404, "Channel not found");
     }
 
-    // Check if the user is trying to subscribe to their own channel
     if (channelId === userId.toString()) {
         throw new ApiError(400, "You cannot subscribe to your own channel");
     }
@@ -45,20 +47,19 @@ const toggleSubscription = asyncHandler(async (req, res) => {
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     const { channelId } = req.params;
 
-    // Validate channelId
     if (!isValidObjectId(channelId)) {
         throw new ApiError(400, "Invalid channel ID");
     }
-
     const subscribers = await Subscription.find({ channel: channelId }).populate("subscriber", "username email");
-
+    // iska matlab hai ki Subscription model me jo channel id hai uske against jo subscriber id hai usko populate karna hai
+    // matlab Subscription.subscriber me we have to add username and email from User model
     return res.status(200).json(new ApiResponse(200, subscribers, "Subscribers fetched successfully"));
 });
 
 const getSubscribedChannels = asyncHandler(async (req, res) => {
     const { subscriberId } = req.params;
 
-    // Validate subscriberId
+
     if (!isValidObjectId(subscriberId)) {
         throw new ApiError(400, "Invalid subscriber ID");
     }

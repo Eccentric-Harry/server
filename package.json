@@ -2,7 +2,7 @@
   "name": "backend-project",
   "version": "1.0.0",
   "description": "project build while learning backend",
-  "main": "index.js",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
     "start": "node -r dotenv/config --experimental-json-modules src/index.js",

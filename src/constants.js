@@ -1,4 +1,4 @@
-export const DB_NAME = "videotube"
+export const DB_NAME = "videotube";
 
 export const coverImg_upOptions = {
   folder: "YT/cover-image",

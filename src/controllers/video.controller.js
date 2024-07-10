@@ -8,6 +8,11 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Like } from "../models/like.model.js";
 import { Comment } from "../models/comment.model.js";
 import {
+  preprocessAvatar,
+  preprocessVideo,
+  preprocessThumbnail,
+} from "../utils/fileProcessing.js";
+import {
   uploadOnCloudinary,
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";
@@ -132,7 +137,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     },
     thumbnail: {
       fileId: thumbnailFile.public_id,
-      url: thumbnailFile.url,
+      url: thumbnailFile.secure_url,
     },
     duration: videoFile.duration,
     title,
@@ -399,7 +404,7 @@ const updateVideo = asyncHandler(async (req, res) => {
 
     update.$set.thumbnail = {
       fileId: thumbnailFile.public_id,
-      url: thumbnailFile.url,
+      url: thumbnailFile.secure_url,
     };
   }
 

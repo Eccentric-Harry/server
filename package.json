@@ -1,22 +1,26 @@
 {
-  "name": "backend",
+  "name": "backend-project",
   "version": "1.0.0",
+  "description": "project build while learning backend",
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "start": "node -r dotenv/config --experimental-json-modules src/index.js",
     "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
   },
-  "keywords": [
-    "javascript",
-    "node",
-    "backend"
-  ],
-  "author": "Harinadh",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AryanBhati7/Backend-Project.git"
+  },
+  "author": "aryanbhati",
   "license": "ISC",
-  "description": "Learning Backend using Complex Project",
+  "bugs": {
+    "url": "https://github.com/AryanBhati7/Backend-Project/issues"
+  },
+  "homepage": "https://github.com/AryanBhati7/Backend-Project#readme",
   "devDependencies": {
-    "nodemon": "^3.1.3",
-    "prettier": "^3.3.1"
+    "nodemon": "^3.1.4",
+    "prettier": "^3.3.0"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -25,9 +29,11 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "fluent-ffmpeg": "^2.1.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.4.1",
     "mongoose-aggregate-paginate-v2": "^1.0.7",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.33.4"
   }
 }

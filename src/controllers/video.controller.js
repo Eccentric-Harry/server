@@ -8,11 +8,6 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Like } from "../models/like.model.js";
 import { Comment } from "../models/comment.model.js";
 import {
-  preprocessAvatar,
-  preprocessVideo,
-  preprocessThumbnail,
-} from "../utils/fileProcessing.js";
-import {
   uploadOnCloudinary,
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";

@@ -19,5 +19,6 @@ export const video_upOptions = {
   resource_type: "video",
   eager: [{ streaming_profile: "full_hd", format: "m3u8" }],
   eager_async: true,
-  eager_notification_url: "http://localhost:8000/",
+  // eager_notification_url: "http://localhost:8000/",
+  eager_notification_url: "https://videotube-backend-delta.vercel.app/",
 };

@@ -13,6 +13,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://videotube-rust.vercel.app",
   "http://localhost:5174",
+  "https://flicker-tv-client.vercel.app/",
 ];
 
 // Log allowed origins to verify they are set correctly
